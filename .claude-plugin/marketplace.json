@@ -1,0 +1,18 @@
+{
+  "name": "AutoSim",
+  "description": "Personal plugin marketplace — LumericalFDTD (FDTD仿真 + 论文总结) + ProPaper Reader (多智能体论文分析)",
+  "owner": {
+    "name": "Lex",
+    "email": "Robotech_Lex@outlook.com"
+  },
+  "plugins": [
+    {
+      "name": "LumericalFDTD",
+      "source":{
+        "source": "url",
+        "url": "https://github.com/Lex669/LumericalFDTD-skill"
+      },
+      "description": "Ansys Lumerical FDTD Python API automation + academic paper deep summarization with figure interpretation. FDTD: photonics design, diffraction, metasurfaces, waveguides, gratings, TGV. Paper analysis: structured Chinese summaries with per-figure detailed explanation."
+    }
+  ]
+}
