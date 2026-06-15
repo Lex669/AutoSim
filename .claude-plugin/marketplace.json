@@ -1,9 +1,9 @@
 {
   "name": "AutoSim",
-  "description": "Personal plugin marketplace — LumericalFDTD (FDTD仿真 + 论文总结) + ProPaper Reader (多智能体论文分析)",
+  "description": "Personal plugin marketplace — LumericalFDTD (FDTD仿真 + 论文总结) + AutoZemax",
   "owner": {
     "name": "Lex",
-    "email": "Robotech_Lex@outlook.com"
+    "email": "Lexy2216@outlook.com"
   },
   "plugins": [
     {
@@ -13,6 +13,14 @@
         "url": "https://github.com/Lex669/LumericalFDTD-skill"
       },
       "description": "Ansys Lumerical FDTD Python API automation + academic paper deep summarization with figure interpretation. FDTD: photonics design, diffraction, metasurfaces, waveguides, gratings, TGV. Paper analysis: structured Chinese summaries with per-figure detailed explanation."
+    },
+    {
+      "name": "AutoZemax",
+      "source":{
+        "source": "url",
+        "url": "https://github.com/Lex669/AutoZemax"
+      },
+      "description": "A agent plugin for Zemax."
     }
   ]
 }
