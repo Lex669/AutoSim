@@ -1,6 +1,6 @@
 # AutoSim
 
-A personal marketplace for Claude Code agent plugins focused on scientific simulation and academic research. Features tools I use frequently, including Zemax OpticStudio lens design, FDTD photonics simulation, and COMSOL (coming soon).
+A personal marketplace for agent plugins supporting both **Claude Code and Codex CLI** ecosystems, focused on scientific simulation and academic research. Features tools I use frequently, including Zemax OpticStudio lens design, FDTD photonics simulation, and COMSOL (coming soon).
 
 ## Getting Started
 
@@ -23,6 +23,25 @@ This registers AutoSim as a plugin source in Claude Code. You only need to do th
 ```bash
 /plugin update <plugin-name>@AutoSim
 ```
+
+## Codex CLI (v0.121+)
+
+The same marketplace is Codex-ready. Each plugin ships a `.codex-plugin/plugin.json` manifest exposing its skills, and Codex auto-discovers the catalog at `.agents/plugins/marketplace.json`.
+
+```bash
+# 1. Add the marketplace
+codex plugin marketplace add Lex669/AutoSim
+
+# 2. Install a plugin (`autosim` is the marketplace name registered in the manifest)
+codex plugin add AutoZemax@autosim
+codex plugin add LumericalFDTD@autosim
+
+# 3. Refresh the marketplace snapshot after plugin updates
+codex plugin marketplace upgrade autosim
+```
+
+> [!NOTE]
+> On Codex, plugins expose only their skills — invoked through natural language. Slash commands and agents remain Claude Code only. `img-gen` is registered with a local source (`./Img-Gen`), so it is not installable by remote marketplace consumers.
 
 ## Available Plugins
 
