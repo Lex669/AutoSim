@@ -1,0 +1,44 @@
+{
+  "name": "autosim",
+  "interface": {
+    "displayName": "AutoSim"
+  },
+  "plugins": [
+    {
+      "name": "img-gen",
+      "source": {
+        "source": "local",
+        "path": "./Img-Gen"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Design"
+    },
+    {
+      "name": "AutoZemax",
+      "source": {
+        "source": "url",
+        "url": "https://github.com/Lex669/AutoZemax"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Design"
+    },
+    {
+      "name": "LumericalFDTD",
+      "source": {
+        "source": "url",
+        "url": "https://github.com/Lex669/LumericalFDTD-skill"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Design"
+    }
+  ]
+}
