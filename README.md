@@ -85,3 +85,23 @@ Automates Zemax OpticStudio optical design workflows using the ZOS-API — creat
 | data-processing | numpy/matplotlib visualization & reporting |
 
 Repository: [Lex669/AutoZemax](https://github.com/Lex669/AutoZemax)
+
+## Changelog
+
+### 2026-09-07 — Codex CLI support & Img-Gen plugin
+
+- Added `.agents/plugins/marketplace.json`, so Codex CLI (v0.121+) auto-discovers this repository as the `autosim` marketplace.
+- Added the **Img-Gen** plugin — DashScope `qwen-image-3.0-pro` text-to-image for academic figures and PPT/defense slides. It is registered with a local source (`./Img-Gen`), so it is not installable by remote marketplace consumers.
+- `.gitignore` now excludes locally cloned plugin repositories (`AutoZemax/`, `LumericalFDTD/`, `.claude/`, `asset/`); each plugin keeps its own repository.
+- README: new **Codex CLI (v0.121+)** section covering `codex plugin marketplace add`, `codex plugin add`, and `codex plugin marketplace upgrade`.
+
+### 2026-06-15 — AutoZemax added
+
+- Registered **AutoZemax** (Zemax OpticStudio automation through the ZOS-API) in `.claude-plugin/marketplace.json`, sourced from [Lex669/AutoZemax](https://github.com/Lex669/AutoZemax).
+- README: added the AutoZemax plugin card with its skill table.
+
+### 2026-05-29 — Marketplace established
+
+- Converted this repository into a Claude Code plugin marketplace: `.claude-plugin/marketplace.json` aggregates plugins that live in separate repositories, starting with **LumericalFDTD** from [Lex669/LumericalFDTD-skill](https://github.com/Lex669/LumericalFDTD-skill).
+- README rewritten as a three-step guide — add the marketplace, install a plugin, update a plugin.
+- Initial commit: repository created under the MIT license.
