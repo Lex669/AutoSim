@@ -5,10 +5,10 @@
   },
   "plugins": [
     {
-      "name": "img-gen",
+      "name": "img-prompt",
       "source": {
         "source": "local",
-        "path": "./Img-Gen"
+        "path": "./Img-Prompt"
       },
       "policy": {
         "installation": "AVAILABLE",
