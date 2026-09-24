@@ -4,23 +4,38 @@
 
 ## 总原则
 
-- 顶层键沿用优秀样本的命名：`type` / `theme` / `style` / `header` / `centerpiece` / `layout`，再按类型分支扩展 `genre` / `canvas` / `avoid`。
+- 顶层键沿用优秀样本的命名：`type` / `theme` / `style` / `header` / `centerpiece` / `layout`，再按类型分支扩展 `genre` / `subtype` / `canvas` / `avoid`。
 - 所有值都要是**可直接执行的画面指令**，不是评论。"配色高级"要写成"主色深靛蓝，点缀暖金，背景近黑"。
 - 图中文字一律中文；专有名词可保留原文，但同一条文字里必须含中文（`相干衍射成像 CDI` 合格，`CDI` 单独出现不合格）。
 - 不留占位符：不写 `[TITLE]`、`{argument name=...}`、`TODO`、`xxx`。
+- 先定画幅：两类都必填 `canvas.aspect`，按用途从 `9:16` / `3:4` / `A4` / `1:1` / `16:9` 里挑一个写死。
+- 数字与单位写死：`λ = 632.8 nm`、`1300 ℃ 一次烧成`、`40–60 分钟`，比"标注参数"稳一档。
+- 不确定的内容不要编造：宁可写"相关记载较少 / 民间传说中多有异文"。
+- `type` 要一句定性：这是什么图、不是什么图。例：`博物馆图鉴式中文拆解信息图`、`模块化科普百科图（非海报）`、`复杂系统图谱式信息图`。
+
+## 交付方式
+
+写好的 JSON 不留在对话里，而是存成项目文件：`prompts/{genre}-{主题}.json`（UTF-8、2 空格缩进、中文不转义）。
+
+```powershell
+$json | python "<技能目录>\scripts\validate_prompt_json.py" --stdin --out prompts
+```
+
+只有 `validate_prompt_json.py` 报"校验通过"才会写入文件；有错时先改提示词。文件名不限死，用户指定了别的目录或名字就按用户的来。
 
 ## 顶层字段
 
 | 字段 | 类型 | 必填 | 说明 |
 | --- | --- | --- | --- |
 | `genre` | string | 是 | `infographic`（信息图）或 `poster`（海报） |
-| `type` | string | 是 | 类型短语，例：`复杂系统图谱式信息图`、`编辑式旅行海报` |
+| `subtype` | string | 信息图必填 | 子类型短语：`科普图鉴`、`结构拆解`、`系统手册页`、`因果链`、`流程步骤`、`数据宫格`、`地图导览`、`分析报告`、`人物档案` |
+| `type` | string | 是 | 类型短语（点明图种定位），例：`复杂系统图谱式信息图`、`编辑式旅行海报` |
 | `theme` | string | 是 | 主题一句话，写清对象与视角 |
-| `style` | string | 是 | 风格段落：风格锚点 + 背景 + 配色 + 材质/工艺 + 排版气质 |
+| `style` | string | 是 | 风格段落：风格锚点 + 背景 + 配色 + 材质/工艺 + 排版气质；信息图按 `infographic-atlas.md` 的三套视觉系统（纸感文博系 / 现代白底系 / 暗色科技系）选一套 |
 | `header` | object | 是 | 文字层，字段随类型分支（见下） |
 | `centerpiece` | object | 是 | 主视觉，字段随类型分支（见下） |
 | `layout` | object | 是 | 版式分区，字段随类型分支（见下） |
-| `canvas` | object | 海报必填 | `{"aspect": "4:5", "orientation": "竖版"}`；信息图可选（如 `1:1`） |
+| `canvas` | object | 是 | `{"aspect": "9:16", "orientation": "竖版"}`；信息图按用途选画幅，海报默认 `4:5` |
 | `avoid` | string[] | 是 | 负面清单：信息图 ≥5 条，海报 ≥3 条 |
 
 ## 样式为 `infographic` 时的分支字段
@@ -48,6 +63,7 @@
 
 - 面板总数 ≥3，建议 5–12。
 - `bottom_row` 必填，承担底部收束（流程条 / 因果链 / 核心总结）。
+- 信息模块建议 4–8 个，版面切成 4–6 个有名字的区域（顶部 / 左侧 / 右上 / 右中 / 底部）。
 - 每个面板对象必填四项：
 
 | 字段 | 必填 | 说明 |
@@ -101,7 +117,9 @@ python "<技能目录>\scripts\validate_prompt_json.py" prompt.json --flatten
 
 退出码：`0` 通过（可能有警告）、`1` 存在错误、`2` 用法或读取失败。警告不阻塞交付，但建议按提示修掉。
 
-脚本会检查：必填字段与分支字段是否齐全、面板是否写了元素与数量、`avoid` 条数、画幅比例、文字是否含中文、是否残留占位符或空字符串，并对标题过长、面板数量异常、海报缺少工艺词给出警告。
+脚本会检查：必填字段与分支字段是否齐全（含 `canvas.aspect`、信息图 `subtype`）、面板是否写了元素与数量、`avoid` 条数、文字是否含中文、是否残留占位符或空字符串。
+
+以下问题只给警告，不阻塞交付：标题过长、面板数量超出 4–12、画幅不在常用比例内、`type` 没点明图种、`avoid` 缺"海报感"或"乱码"条款、`style` 看不出配色或材质、海报缺工艺词。
 
 ## 最小骨架
 
@@ -110,6 +128,7 @@ python "<技能目录>\scripts\validate_prompt_json.py" prompt.json --flatten
 ```json
 {
   "genre": "infographic",
+  "subtype": "系统手册页",
   "type": "复杂系统图谱式信息图",
   "theme": "……",
   "canvas": { "aspect": "1:1", "orientation": "方形" },
@@ -126,4 +145,4 @@ python "<技能目录>\scripts\validate_prompt_json.py" prompt.json --flatten
 }
 ```
 
-海报把 `header`、`centerpiece`、`layout` 换成海报分支字段，并补上 `canvas` 即可。
+海报把 `header`、`centerpiece`、`layout` 换成海报分支字段，并去掉 `subtype` 即可。

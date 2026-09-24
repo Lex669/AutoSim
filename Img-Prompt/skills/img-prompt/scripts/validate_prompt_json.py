@@ -9,6 +9,10 @@
     python validate_prompt_json.py --stdin < prompt.json
     python validate_prompt_json.py prompt.json --flatten
     python validate_prompt_json.py prompt.json --json
+    python validate_prompt_json.py --stdin --out prompts < prompt.json
+
+加 `--out` 时，校验通过后把 JSON 写入该项目目录（默认 `prompts/`），
+文件名按 `{genre}-{主题}.json` 生成，同名自动加序号。
 
 退出码：0 通过（可含警告）、1 校验错误、2 用法或读取失败。
 """
@@ -70,6 +74,78 @@ CRAFT_KEYWORDS = (
 
 AVOID_MINIMUM = {"infographic": 5, "poster": 3}
 
+SLUG_PATTERN = re.compile(r"[^0-9A-Za-z\u3400-\u4dbf\u4e00-\u9fff\uf900-\ufaff]+")
+SLUG_MAX_LENGTH = 40
+
+KNOWN_ASPECTS = ("9:16", "3:4", "4:5", "2:3", "1:1", "16:9", "4:3", "3:2", "A4")
+
+INFOGRAPHIC_SUBTYPES = (
+    "科普图鉴",
+    "百科",
+    "图鉴",
+    "结构拆解",
+    "拆解",
+    "剖面",
+    "爆炸",
+    "系统",
+    "工程",
+    "手册",
+    "因果链",
+    "流程",
+    "步骤",
+    "食谱",
+    "数据",
+    "宫格",
+    "网格",
+    "卡片",
+    "地图",
+    "导览",
+    "绘本",
+    "分析报告",
+    "画像",
+    "学习卡",
+    "词汇卡",
+    "人物",
+    "文化档案",
+)
+
+TYPE_HINTS = (
+    "信息图",
+    "图谱",
+    "图鉴",
+    "图册",
+    "图版",
+    "手册",
+    "百科",
+    "知识卡",
+    "解剖图",
+    "卡片",
+    "报告",
+)
+
+PALETTE_HINTS = ("色", "配色", "底")
+
+MATERIAL_HINTS = (
+    "纸",
+    "纹理",
+    "材质",
+    "哑光",
+    "磨砂",
+    "颗粒",
+    "金属",
+    "陶瓷",
+    "玻璃",
+    "纤维",
+    "绢",
+    "布",
+    "木",
+    "石",
+    "亚麻",
+    "反光",
+)
+
+TEXT_HYGIENE_HINTS = ("乱码", "错字", "拼音", "糊字", "缺字")
+
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
@@ -87,6 +163,16 @@ def parse_args() -> argparse.Namespace:
         dest="json_output",
         action="store_true",
         help="以 JSON 输出校验结果（机器可读）",
+    )
+    parser.add_argument(
+        "--out",
+        metavar="DIR",
+        help="校验通过后把提示词写入该目录（项目内建议用 prompts），文件名自动生成",
+    )
+    parser.add_argument(
+        "--name",
+        metavar="FILE",
+        help="配合 --out 指定文件名，可省略 .json 后缀",
     )
     return parser.parse_args()
 
@@ -107,6 +193,41 @@ def load_payload(args: argparse.Namespace) -> Any:
         return json.loads(raw)
     except json.JSONDecodeError as error:
         raise ValueError(f"{source} 不是合法 JSON: {error}") from error
+
+
+def slugify(text: str) -> str:
+    """把主题压成适合做文件名的短 slug，保留中文与字母数字。"""
+    cleaned = SLUG_PATTERN.sub("-", text).strip("-")
+    if len(cleaned) > SLUG_MAX_LENGTH:
+        cleaned = cleaned[:SLUG_MAX_LENGTH].strip("-")
+    return cleaned or "prompt"
+
+
+def default_output_name(payload: dict[str, Any]) -> str:
+    genre = str(payload.get("genre") or "prompt")
+    theme = str(payload.get("theme") or payload.get("type") or "")
+    return f"{genre}-{slugify(theme)}.json"
+
+
+def save_payload(payload: dict[str, Any], out_dir: str, name: str | None) -> Path:
+    """把校验通过的提示词写入项目目录，返回落盘路径。"""
+    target_dir = Path(out_dir)
+    target_dir.mkdir(parents=True, exist_ok=True)
+
+    filename = Path(name).name if name else default_output_name(payload)
+    if not filename.lower().endswith(".json"):
+        filename = f"{filename}.json"
+
+    path = target_dir / filename
+    stem, suffix = path.stem, path.suffix
+    index = 2
+    while path.exists():
+        path = target_dir / f"{stem}-{index}{suffix}"
+        index += 1
+
+    text = json.dumps(payload, ensure_ascii=False, indent=2) + "\n"
+    path.write_text(text, encoding="utf-8")
+    return path
 
 
 def walk_strings(value: Any, path: str = "$") -> list[tuple[str, str]]:
@@ -213,11 +334,62 @@ def check_panel(field: str, panel: dict[str, Any], errors: list[str]) -> None:
         check_cjk(label, label_field, errors)
 
 
+def check_canvas(
+    payload: dict[str, Any],
+    errors: list[str],
+    warnings: list[str],
+) -> None:
+    canvas = require_object(payload, "canvas", errors)
+    if canvas is None:
+        return
+    aspect = require_string(canvas, "aspect", "canvas.aspect", errors)
+    if aspect and aspect not in KNOWN_ASPECTS:
+        warnings.append(
+            f"`canvas.aspect` = {aspect} 不在常用画幅里"
+            "（9:16 / 3:4 / A4 / 1:1 / 16:9），模型可能排不出版式"
+        )
+
+
 def validate_infographic(
     payload: dict[str, Any],
     errors: list[str],
     warnings: list[str],
 ) -> None:
+    subtype = require_string(payload, "subtype", "subtype", errors)
+    if subtype and not any(word in subtype for word in INFOGRAPHIC_SUBTYPES):
+        warnings.append(
+            f"`subtype` = {subtype} 不在常见子类型里"
+            "（科普图鉴 / 结构拆解 / 系统手册页 / 因果链 / 流程步骤 / 数据宫格 / 地图导览 / 分析报告 / 人物档案），"
+            "确认骨架是否对得上"
+        )
+
+    type_text = payload.get("type")
+    if isinstance(type_text, str) and not any(hint in type_text for hint in TYPE_HINTS):
+        warnings.append(
+            "`type` 没点明图种定位，建议写成「博物馆图鉴式中文拆解信息图」这类短语"
+        )
+
+    style = payload.get("style")
+    if isinstance(style, str):
+        if not any(word in style for word in PALETTE_HINTS):
+            warnings.append("`style` 里看不出配色，建议写明主色与点缀色")
+        if not any(word in style for word in MATERIAL_HINTS):
+            warnings.append(
+                "`style` 里没有材质或底质词（纸感 / 白底 / 深色底、纹理、哑光…），图鉴感会变弱"
+            )
+
+    avoid = payload.get("avoid")
+    if isinstance(avoid, list):
+        joined = " ".join(item for item in avoid if isinstance(item, str))
+        if "海报" not in joined:
+            warnings.append(
+                "`avoid` 建议含「海报广告感」：信息图最常见的跑偏就是做成海报"
+            )
+        if not any(word in joined for word in TEXT_HYGIENE_HINTS):
+            warnings.append(
+                "`avoid` 建议含乱码 / 错字 / 拼音条款，中文长图最容易毁在这里"
+            )
+
     header = require_object(payload, "header", errors)
     if header is not None:
         title = require_string(header, "title", "header.title", errors)
@@ -261,10 +433,6 @@ def validate_poster(
     errors: list[str],
     warnings: list[str],
 ) -> None:
-    canvas = require_object(payload, "canvas", errors)
-    if canvas is not None:
-        require_string(canvas, "aspect", "canvas.aspect", errors)
-
     header = require_object(payload, "header", errors)
     if header is not None:
         headline = require_string(header, "headline", "header.headline", errors)
@@ -336,6 +504,8 @@ def validate(payload: Any) -> tuple[list[str], list[str]]:
         payload, "avoid", "avoid", errors, minimum=AVOID_MINIMUM[genre]
     )
 
+    check_canvas(payload, errors, warnings)
+
     if genre == "infographic":
         validate_infographic(payload, errors, warnings)
     else:
@@ -348,6 +518,9 @@ def flatten(payload: dict[str, Any]) -> str:
     genre = payload.get("genre")
     lines: list[str] = []
     lines.append(f"【类型】{payload.get('type', '')}")
+    subtype = payload.get("subtype")
+    if isinstance(subtype, str) and subtype.strip():
+        lines.append(f"【子类型】{subtype.strip()}")
     lines.append(f"【主题】{payload.get('theme', '')}")
 
     canvas = payload.get("canvas")
@@ -438,15 +611,28 @@ def main() -> int:
     errors, warnings = validate(payload)
     ok = not errors
 
+    saved: Path | None = None
+    save_error: str | None = None
+    if ok and args.out:
+        try:
+            saved = save_payload(payload, args.out, args.name)
+        except OSError as error:
+            save_error = f"写入失败: {error}"
+
     if args.json_output:
         print(
             json.dumps(
-                {"ok": ok, "errors": errors, "warnings": warnings},
+                {
+                    "ok": ok and save_error is None,
+                    "errors": errors + ([save_error] if save_error else []),
+                    "warnings": warnings,
+                    "saved": str(saved) if saved else None,
+                },
                 ensure_ascii=False,
                 indent=2,
             )
         )
-        return 0 if ok else 1
+        return 0 if ok and save_error is None else 1
 
     for warning in warnings:
         print(f"警告: {warning}")
@@ -454,9 +640,16 @@ def main() -> int:
         print("校验未通过：")
         for error in errors:
             print(f"- {error}")
+        if args.out:
+            print("未写入文件：先修掉上面的问题再保存。")
         return 1
 
     print("校验通过。")
+    if save_error:
+        print(save_error, file=sys.stderr)
+        return 2
+    if saved:
+        print(f"已保存: {saved.resolve()}")
     if args.flatten:
         print()
         print(flatten(payload))
