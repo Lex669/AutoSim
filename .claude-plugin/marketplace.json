@@ -21,6 +21,22 @@
         "url": "https://github.com/Lex669/AutoZemax"
       },
       "description": "A agent plugin for Zemax."
+    },
+    {
+      "name": "momocard",
+      "source":{
+        "source": "url",
+        "url": "https://github.com/Lex669/momocard"
+      },
+      "description": "用于将知识点转化为墨墨记忆卡的插件"
+    },
+    {
+      "name": "img-prompt",
+      "source":{
+        "source": "url",
+        "url": "https://github.com/Lex669/AutoSim/tree/main/Img-Prompt"
+      },
+      "description": "按优秀生图提示词的规律，为信息图与海报撰写结构化全中文 JSON 提示词。"
     }
   ]
 }

@@ -147,9 +147,9 @@ codex plugin add img-prompt@autosim
 ```
 
 > [!NOTE]
-> 本插件在 AutoSim 的 Codex 市场清单里以**本地源**（`./Img-Prompt`）注册，所以只对克隆了 AutoSim 仓库的本地用户可用——远程市场消费者无法安装它。
+> 本插件在 AutoSim 的 Codex 市场清单里通过 GitHub URL（`https://github.com/Lex669/AutoSim/tree/main/Img-Prompt`）注册，远程市场消费者可以直接安装；同时也登记在 Claude Code 市场清单（`.claude-plugin/marketplace.json`）中。
 
-插件本身只是一组 Markdown 规范加一个 Python 脚本，因此也可以直接把 `skills/img-prompt/` 放进你惯用的技能目录（如 `~/.codex/skills/`）。目前它尚未登记到仓库的 Claude Code 市场清单（`.claude-plugin/marketplace.json`）中。
+插件本身只是一组 Markdown 规范加一个 Python 脚本，因此也可以直接把 `skills/img-prompt/` 放进你惯用的技能目录（如 `~/.codex/skills/`）。
 
 ---
 
@@ -254,6 +254,11 @@ Img-Prompt/
 ---
 
 ## 🗓️ 更新日志
+
+### 2026-10-14 — 市场清单改用 GitHub URL
+
+- 登记到 Claude Code 市场清单（`.claude-plugin/marketplace.json`）。
+- Codex 市场来源从本地 `./Img-Prompt` 改为 `https://github.com/Lex669/AutoSim/tree/main/Img-Prompt`。
 
 ### v0.4.0 · 2026-09-24 — 落盘契约与 79 例信息图规律
 

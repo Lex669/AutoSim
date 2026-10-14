@@ -7,8 +7,8 @@
     {
       "name": "img-prompt",
       "source": {
-        "source": "local",
-        "path": "./Img-Prompt"
+        "source": "url",
+        "url": "https://github.com/Lex669/AutoSim/tree/main/Img-Prompt"
       },
       "policy": {
         "installation": "AVAILABLE",
@@ -39,6 +39,18 @@
         "authentication": "ON_INSTALL"
       },
       "category": "Design"
+    },
+    {
+      "name": "momocard",
+      "source": {
+        "source": "url",
+        "url": "https://github.com/Lex669/momocard"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Productivity"
     }
   ]
 }

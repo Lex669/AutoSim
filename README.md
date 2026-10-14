@@ -1,6 +1,6 @@
 # AutoSim
 
-A personal marketplace for agent plugins supporting both **Claude Code and Codex CLI** ecosystems, focused on scientific simulation and academic research. Features tools I use frequently, including Zemax OpticStudio lens design, FDTD photonics simulation, and COMSOL (coming soon).
+A personal marketplace for agent plugins supporting both **Claude Code and Codex CLI** ecosystems, focused on scientific simulation and academic research. Features tools I use frequently, including Zemax OpticStudio lens design, FDTD photonics simulation, structured image-prompt authoring, MoMo memory-card generation, and COMSOL (coming soon).
 
 ## Getting Started
 
@@ -36,13 +36,14 @@ codex plugin marketplace add Lex669/AutoSim
 codex plugin add AutoZemax@autosim
 codex plugin add LumericalFDTD@autosim
 codex plugin add img-prompt@autosim
+codex plugin add momocard@autosim
 
 # 3. Refresh the marketplace snapshot after plugin updates
 codex plugin marketplace upgrade autosim
 ```
 
 > [!NOTE]
-> On Codex, plugins expose only their skills — invoked through natural language. Slash commands and agents remain Claude Code only. `img-prompt` is registered with a local source (`./Img-Prompt`), so it is not installable by remote marketplace consumers.
+> On Codex, plugins expose only their skills — invoked through natural language. Slash commands and agents remain Claude Code only. `img-prompt` and `momocard` are registered with GitHub URL sources in the marketplace manifests.
 
 ## Available Plugins
 
@@ -87,6 +88,22 @@ Automates Zemax OpticStudio optical design workflows using the ZOS-API — creat
 
 Repository: [Lex669/AutoZemax](https://github.com/Lex669/AutoZemax)
 
+### momocard
+
+Converts knowledge points, notes, and documents into Markji (MoMo memory card) card text with correct syntax, targeted cloze deletion, mnemonic notes, and chapter-based batch output.
+
+```bash
+/plugin install momocard@AutoSim
+```
+
+**Skills included:**
+
+| Skill | Description |
+|-------|-------------|
+| momocard | Convert knowledge points and notes into Markji-compatible memory-card text |
+
+Repository: [Lex669/momocard](https://github.com/Lex669/momocard)
+
 ### Img-Prompt
 
 Turns a one-line theme into a structured JSON prompt for image generation tools — **knowledge-atlas infographics** (system cutaways, process chains, principle diagrams) and **posters**. The skill first decides the genre, then derives the skeleton from the subject: an infographic always orbits one photoreal cutaway hero visual and rebuilds the subject as an ordered chain (for coherent diffraction imaging: source → pinhole/shaping → sample → detector → phase retrieval → reconstruction), while a poster is organized as a sub-type with a fully specified text layer, layout sections, and print-craft vocabulary. Prompts are emitted as all-Chinese JSON and ship with a validator that also flattens a prompt into prose. The plugin never calls an image API.
@@ -101,7 +118,15 @@ codex plugin add img-prompt@autosim
 |-------|-------------|
 | img-prompt | Write all-Chinese JSON prompts for knowledge-atlas infographics and posters, with genre routing, skeleton derivation, and offline validation |
 
+Repository: [Lex669/AutoSim/tree/main/Img-Prompt](https://github.com/Lex669/AutoSim/tree/main/Img-Prompt)
+
 ## Changelog
+
+### 2026-10-14 — Marketplace URL registration
+
+- Added **momocard** to both marketplace manifests.
+- Registered **Img-Prompt** in the Claude marketplace and changed its Codex marketplace source from local `./Img-Prompt` to the GitHub URL under `Lex669/AutoSim/tree/main/Img-Prompt`.
+- Updated the README plugin catalog and installation commands.
 
 ### 2026-09-23 — Img-Prompt (refactored from Img-Gen)
 
